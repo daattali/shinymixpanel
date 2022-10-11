@@ -1,21 +1,29 @@
 # shinymixpanel
+
+*** This package is a work in progress ***
+
 Track user data with Mixpanel in Shiny apps
 
 ```r
 library(shiny)
+library(shinymixpanel)
+
+mixpanel_token <- "PROJECT_TOKEN_HERE"
 
 ui <- fluidPage(
-  use_mixpanel(
-    token
-    userid
-  ),
-  actionButton("go","go"),
-  textInput("event","event", "something happened")
+  mp_init(mixpanel_token),
+  actionButton("send", "send"),
+  selectInput("event_name", "Event name", c("sign up", "navigate", "click")),
+  textInput("prop", "Property text to send with event", "Some text")
 )
 
 server <- function(input, output, session) {
-  observeEvent(input$go,{
-    track(input$event, list("ff"="45","browser"="chrom", distinct_id ="ggg"))
+  observeEvent(input$send,{
+    mp_track(
+      input$event_name,
+      list(prop = input$prop, shiny_version = as.character(packageVersion("shiny"))),
+      list(size = "screen.width")
+    )
   })
 }
 
