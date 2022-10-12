@@ -40,6 +40,10 @@ let shinymixpanel = {
 
     mixpanel.init(token, shinymixpanel.options);
 
+    shinymixpanel.identifyUser();
+  },
+
+  identifyUser : function() {
     if (shinymixpanel.userid !== "") {
       mixpanel.identify(shinymixpanel.userid);
     }
@@ -58,6 +62,7 @@ let shinymixpanel = {
 
 $(function() { shinymixpanel.init(); });
 
+
 Shiny.addCustomMessageHandler('shinymixpanel.track', function(params) {
   let props = {};
   shinymixpanel.copyProps(shinymixpanel.defaultProps, props, false)
@@ -65,4 +70,9 @@ Shiny.addCustomMessageHandler('shinymixpanel.track', function(params) {
   shinymixpanel.copyProps(params.properties, props, false)
   shinymixpanel.copyProps(params.properties_js, props, true)
   mixpanel.track(params.event, props);
+});
+
+Shiny.addCustomMessageHandler('shinymixpanel.setUserID', function(params) {
+  shinymixpanel.userid = params.userid;
+  shinymixpanel.identifyUser();
 });

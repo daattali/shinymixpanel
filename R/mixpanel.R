@@ -1,14 +1,16 @@
 #' Set up a Shiny app to use Mixpanel for event tracking
 #'
-#' Call this function in a Shiny app's UI in order to initialize Mixpanel on the page. The only
-#' parameter that is required is `token`. See the examples below for sample usage of the
-#' other parameters.
+#' Call this function in a Shiny app's UI in order to initialize Mixpanel on the page. A project
+#' token is required, which can either be provided using the `token` parameter or with the
+#' `SHINYMIXPANEL_TOKEN` environment variable.
 #'
 #' @note Tracking can be temporarily disabled, for example while developing or testing, by setting
 #' the `SHINYMIXPANEL_DISABLE` environment variable to `"1"`.
-#' @param token The Mixpanel project token.
-#' @param userid A user to identify with Mixpanel on the current page. If provided, this userid
-#' will be associated with all event tracking calls.
+#' @param token The Mixpanel project token. If not provided, then an environment variable
+#' `SHINYMIXPANEL_TOKEN` will be used.
+#' @param userid A user ID to identify with Mixpanel on the current page. If provided, this user ID
+#' will be associated with all event tracking calls. If the user ID is not known in the UI and
+#' is only known in the server, call [mp_userid()] from the server.
 #' @param options List of configuration options to pass to Mixpanel. A full list of supported
 #' options is available in [Mixpanel's documentation](https://developer.mixpanel.com/docs/javascript-full-api-reference#mixpanelset_config).
 #' See the examples below for sample usage.
@@ -35,9 +37,9 @@
 #' }
 #' @export
 mp_init <- function(
-    token, userid = NULL, options = NULL,
-    default_properties = NULL, default_properties_js = NULL,
-    test_token = NULL, test_domains = list("127.0.0.1", "localhost")
+    token, userid = "", options = list(),
+    default_properties = list(), default_properties_js = list(),
+    test_token = "", test_domains = list("127.0.0.1", "localhost")
 ) {
   if (Sys.getenv("SHINYMIXPANEL_DISABLE", "") != "") {
     message("Note: {shinymixpanel} is disabled through SHINYMIXPANEL_DISABLE envvar")
@@ -45,12 +47,18 @@ mp_init <- function(
   }
 
   if (missing(token)) {
-    stop("Cannot initialize mixpanel without a project token", call. = FALSE)
+    token <- Sys.getenv("SHINYMIXPANEL_TOKEN", "")
+    if (token == "") {
+      stop("mp_init: Cannot initialize mixpanel without a project token", call. = FALSE)
+    }
   }
 
-  options <- list_to_null(options)
-  default_properties <- list_to_null(default_properties)
-  default_properties_js <- list_to_null(default_properties_js)
+  userid <- empty_to_null(userid)
+  options <- empty_to_null(options)
+  default_properties <- empty_to_null(default_properties)
+  default_properties_js <- empty_to_null(default_properties_js)
+  test_token <- empty_to_null(test_token)
+  test_domains <- empty_to_null(test_domains)
 
   js_vars <- 'shinymixpanel.token = "{ token }";'
   if (!is.null(options)) {
@@ -86,6 +94,10 @@ mp_init <- function(
 #' in the user's browser)
 #' @export
 mp_track <- function(event, properties = list(), properties_js = list()) {
+  if (missing(event)) {
+    stop("mp_track: An `event` is required", call. = FALSE)
+  }
+
   session <- shiny::getDefaultReactiveDomain()
   session$sendCustomMessage(
     'shinymixpanel.track',
@@ -93,6 +105,26 @@ mp_track <- function(event, properties = list(), properties_js = list()) {
       event = event,
       properties = properties,
       properties_js = properties_js
+    )
+  )
+}
+
+#' Associate all Mixpanel events to a user
+#'
+#' After calling `mp_userid()`, all subsequent Mixpanel events will be associated with
+#' this user ID.
+#'
+#' @param userid A user ID to identify with Mixpanel.
+#' @export
+mp_userid <- function(userid) {
+  if (missing(userid)) {
+    stop("mp_userid: A `userid` is required", call. = FALSE)
+  }
+  session <- shiny::getDefaultReactiveDomain()
+  session$sendCustomMessage(
+    'shinymixpanel.setUserID',
+    list(
+      userid = userid
     )
   )
 }

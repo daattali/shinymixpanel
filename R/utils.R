@@ -8,6 +8,14 @@ html_dependency_mixpanel <- function() {
   )
 }
 
-list_to_null <- function(x) {
-  if (!is.null(x) && length(x) == 0) NULL else x
+empty_to_null <- function(x) {
+  if (is.null(x)) {
+    NULL
+  } else if (length(x) == 0) {
+    NULL
+  } else if (length(x) == 1 && is.character(x) && x == "") {
+    NULL
+  } else {
+    x
+  }
 }

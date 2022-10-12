@@ -6,19 +6,21 @@
 \usage{
 mp_init(
   token,
-  userid = NULL,
-  options = NULL,
-  default_properties = NULL,
-  default_properties_js = NULL,
-  test_token = NULL,
+  userid = "",
+  options = list(),
+  default_properties = list(),
+  default_properties_js = list(),
+  test_token = "",
   test_domains = list("127.0.0.1", "localhost")
 )
 }
 \arguments{
-\item{token}{The Mixpanel project token.}
+\item{token}{The Mixpanel project token. If not provided, then an environment variable
+\code{SHINYMIXPANEL_TOKEN} will be used.}
 
-\item{userid}{A user to identify with Mixpanel on the current page. If provided, this userid
-will be associated with all event tracking calls.}
+\item{userid}{A user ID to identify with Mixpanel on the current page. If provided, this user ID
+will be associated with all event tracking calls. If the user ID is not known in the UI and
+is only known in the server, call \code{\link[=mp_userid]{mp_userid()}} from the server.}
 
 \item{options}{List of configuration options to pass to Mixpanel. A full list of supported
 options is available in \href{https://developer.mixpanel.com/docs/javascript-full-api-reference#mixpanelset_config}{Mixpanel's documentation}.
@@ -36,9 +38,9 @@ See the section below on "Using a test Mixpanel project for testing/development"
 with \code{test_token}. See the section below on "Using a test Mixpanel project for testing/development".}
 }
 \description{
-Call this function in a Shiny app's UI in order to initialize Mixpanel on the page. The only
-parameter that is required is \code{token}. See the examples below for sample usage of the
-other parameters.
+Call this function in a Shiny app's UI in order to initialize Mixpanel on the page. A project
+token is required, which can either be provided using the \code{token} parameter or with the
+\code{SHINYMIXPANEL_TOKEN} environment variable.
 }
 \note{
 Tracking can be temporarily disabled, for example while developing or testing, by setting
