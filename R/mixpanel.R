@@ -53,12 +53,18 @@ mp_init <- function(
   default_properties_js <- list_to_null(default_properties_js)
 
   js_vars <- 'shinymixpanel.token = "{ token }";'
-  js_vars <- paste(js_vars, 'shinymixpanel.options = { jsonlite::toJSON(options, auto_unbox = TRUE) };')
+  if (!is.null(options)) {
+    js_vars <- paste(js_vars, 'shinymixpanel.options = { jsonlite::toJSON(options, auto_unbox = TRUE) };')
+  }
   if (!is.null(userid)) {
     js_vars <- paste(js_vars, 'shinymixpanel.userid = "{ userid }";')
   }
-  js_vars <- paste(js_vars, 'shinymixpanel.defaultProps = { jsonlite::toJSON(default_properties, auto_unbox = TRUE) };')
-  js_vars <- paste(js_vars, 'shinymixpanel.defaultPropsJS = { jsonlite::toJSON(default_properties_js, auto_unbox = TRUE) };')
+  if (!is.null(default_properties)) {
+    js_vars <- paste(js_vars, 'shinymixpanel.defaultProps = { jsonlite::toJSON(default_properties, auto_unbox = TRUE) };')
+  }
+  if (!is.null(default_properties_js)) {
+    js_vars <- paste(js_vars, 'shinymixpanel.defaultPropsJS = { jsonlite::toJSON(default_properties_js, auto_unbox = TRUE) };')
+  }
   if (!is.null(test_token) && !is.null(test_domains) && length(test_domains >= 1)) {
     js_vars <- paste(js_vars, 'shinymixpanel.testToken = "{ test_token }";')
     js_vars <- paste(js_vars, 'shinymixpanel.testDomains = { jsonlite::toJSON(test_domains, auto_unbox = TRUE) };')

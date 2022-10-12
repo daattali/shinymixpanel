@@ -1,6 +1,6 @@
 # shinymixpanel
 
-*** This package is a work in progress ***
+**This package is a work in progress**
 
 Track user data with Mixpanel in Shiny apps
 
