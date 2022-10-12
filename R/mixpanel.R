@@ -34,6 +34,41 @@
 #' @examples
 #' if (interactive()) {
 #'
+#'   ### The simplest way to initialize Mixpanel is simply by calling `mp_init(token)`
+#'   library(shiny)
+#'   library(shinymixpanel)
+#'   ui <- fluidPage(
+#'     mp_init(YOUR_PROJECT_TOKEN)
+#'   )
+#'
+#'   server <- function(input, output, session) {
+#'     mp_track("page init")
+#'   }
+#'
+#'   shinyApp(ui, server)
+#'
+#'   ### The exapmle below shows how to use the many different parameters
+#'
+#'   library(shiny)
+#'   library(shinymixpanel)
+#'
+#'   ui <- fluidPage(
+#'     mp_init(
+#'       YOUR_PROJECT_TOKEN,
+#'       userid = "d24ba28c3",
+#'       options = list(debug = TRUE),
+#'       default_properties = list(foo = "bar", shiny_version = as.character(packageVersion("shiny"))),
+#'       default_properties_js = list(size = "screen.width", ua = "navigator.userAgent"),
+#'       test_token = TOKEN_FOR_TEST_PROJECT,
+#'       test_domains = list("127.0.0.1", "internal.mycompany.com")
+#'     )
+#'   )
+#'
+#'   server <- function(input, output, session) {
+#'     mp_track("page init")
+#'   }
+#'
+#'   shinyApp(ui, server)
 #' }
 #' @export
 mp_init <- function(
@@ -73,7 +108,7 @@ mp_init <- function(
   if (!is.null(default_properties_js)) {
     js_vars <- paste(js_vars, 'shinymixpanel.defaultPropsJS = { jsonlite::toJSON(default_properties_js, auto_unbox = TRUE) };')
   }
-  if (!is.null(test_token) && !is.null(test_domains) && length(test_domains >= 1)) {
+  if (!is.null(test_token) && !is.null(test_domains) && length(test_domains) >= 1) {
     js_vars <- paste(js_vars, 'shinymixpanel.testToken = "{ test_token }";')
     js_vars <- paste(js_vars, 'shinymixpanel.testDomains = { jsonlite::toJSON(test_domains, auto_unbox = TRUE) };')
   }
