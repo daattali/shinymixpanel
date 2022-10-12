@@ -17,3 +17,19 @@ in the user's browser)}
 \description{
 Track an event to Mixpanel
 }
+\examples{
+if (interactive()) {
+  library(shiny)
+  library(shinymixpanel)
+
+  ui <- fluidPage(
+    mp_init(YOUR_PROJECT_TOKEN)
+  )
+
+  server <- function(input, output, session) {
+    mp_track("page init")
+  }
+
+  shinyApp(ui, server)
+}
+}

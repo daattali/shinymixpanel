@@ -76,3 +76,11 @@ Shiny.addCustomMessageHandler('shinymixpanel.setUserID', function(params) {
   shinymixpanel.userid = params.userid;
   shinymixpanel.identifyUser();
 });
+
+Shiny.addCustomMessageHandler('shinymixpanel.setDefaultProps', function(params) {
+  shinymixpanel.defaultProps = params.props;
+});
+
+Shiny.addCustomMessageHandler('shinymixpanel.setDefaultPropsJS', function(params) {
+  shinymixpanel.defaultPropsJS = params.props;
+});
