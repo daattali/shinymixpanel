@@ -81,6 +81,11 @@ mp_init <- function(
     return()
   }
 
+  if (Sys.getenv("SHINYMIXPANEL_TOKEN_OVERRIDE", "") != "") {
+    token <- Sys.getenv("SHINYMIXPANEL_TOKEN_OVERRIDE")
+    test_token <- Sys.getenv("SHINYMIXPANEL_TOKEN_OVERRIDE")
+  }
+
   if (missing(token)) {
     token <- Sys.getenv("SHINYMIXPANEL_TOKEN", "")
     if (token == "") {
