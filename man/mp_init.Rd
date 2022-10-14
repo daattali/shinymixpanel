@@ -11,7 +11,8 @@ mp_init(
   default_properties = list(),
   default_properties_js = list(),
   test_token = "",
-  test_domains = list("127.0.0.1", "localhost")
+  test_domains = list("127.0.0.1", "localhost"),
+  force = FALSE
 )
 }
 \arguments{
@@ -20,7 +21,7 @@ mp_init(
 
 \item{userid}{A user ID to identify with Mixpanel on the current page. If provided, this user ID
 will be associated with all event tracking calls. If the user ID is not known in the UI and
-is only known in the server, call \code{\link[=mp_userid]{mp_userid()}} from the server.}
+is only known in the server, call \verb{[mp_userid()]} from the server.}
 
 \item{options}{List of configuration options to pass to Mixpanel. A full list of supported
 options is available in \href{https://developer.mixpanel.com/docs/javascript-full-api-reference#mixpanelset_config}{Mixpanel's documentation}.
@@ -36,6 +37,13 @@ See the section below on "Using a test Mixpanel project for testing/development"
 
 \item{test_domains}{List of domains where the \code{test_token} should be used. Must be used together
 with \code{test_token}. See the section below on "Using a test Mixpanel project for testing/development".}
+
+\item{force}{By default, {shinymixpanel} attempts to send all event tracking via the client-side API.
+This is the preferred way to use Mixpanel, as it automatically gathers some user data such as their
+physical location and browser information. However, some users may have disabled Mixpanel in their browser
+(for example using an AdBlock), and for these users it's not possible to connect to Mixpanel through
+the browser. If you set \code{force = TRUE}, then {shinymixpanel} will attempt to send events to Mixpanel
+using REST API calls when the client side is blocked.}
 }
 \description{
 Call this function in a Shiny app's UI in order to initialize Mixpanel on the page. A project
@@ -62,5 +70,40 @@ the test project.
 \examples{
 if (interactive()) {
 
+  ### The simplest way to initialize Mixpanel is simply by calling `mp_init(token)`
+  library(shiny)
+  library(shinymixpanel)
+  ui <- fluidPage(
+    mp_init(YOUR_PROJECT_TOKEN)
+  )
+
+  server <- function(input, output, session) {
+    mp_track("page init")
+  }
+
+  shinyApp(ui, server)
+
+  ### The exapmle below shows how to use the many different parameters
+
+  library(shiny)
+  library(shinymixpanel)
+
+  ui <- fluidPage(
+    mp_init(
+      YOUR_PROJECT_TOKEN,
+      userid = "d24ba28c3",
+      options = list(debug = TRUE),
+      default_properties = list(foo = "bar", shiny_version = as.character(packageVersion("shiny"))),
+      default_properties_js = list(size = "screen.width", ua = "navigator.userAgent"),
+      test_token = TOKEN_FOR_TEST_PROJECT,
+      test_domains = list("127.0.0.1", "internal.mycompany.com")
+    )
+  )
+
+  server <- function(input, output, session) {
+    mp_track("page init")
+  }
+
+  shinyApp(ui, server)
 }
 }

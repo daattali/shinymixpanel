@@ -19,3 +19,7 @@ empty_to_null <- function(x) {
     x
   }
 }
+
+is_empty <- function(x) {
+  is.null(empty_to_null(x))
+}

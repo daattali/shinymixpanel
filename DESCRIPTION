@@ -14,6 +14,7 @@ Depends:
 Imports:
     glue,
     htmltools,
+    httr,
     jsonlite,
     shiny (>= 1.0.0),
     utils

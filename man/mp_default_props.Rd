@@ -10,7 +10,8 @@ mp_default_props(properties)
 \item{properties}{List of properties.}
 }
 \description{
-These properties will be sent with every subsequent Mixpanel event.
+These properties will be sent with every subsequent Mixpanel event. Calling this function
+multiple times will override the previous defaults.
 }
 \examples{
 if (interactive()) {

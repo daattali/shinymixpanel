@@ -4,18 +4,19 @@
 \alias{mp_track}
 \title{Track an event to Mixpanel}
 \usage{
-mp_track(event, properties = list(), properties_js = list())
+mp_track(event, properties = list())
 }
 \arguments{
 \item{event}{Name of the event}
 
 \item{properties}{List of properties to send for this event}
-
-\item{properties_js}{List of properties to be computed client-side (with JavaScript
-in the user's browser)}
 }
 \description{
-Track an event to Mixpanel
+When called from a Shiny app, the Mixpanel client-side API is used. This is the preferred way
+to use Mixpanel, as it automatically gathers some user data such as their physical location
+and browser information. If you prefer to use the server-side API explicitly, use
+\verb{[mp_track_server()]}.\cr\cr
+When called outside a Shiny app, \verb{[mp_track_server()]} is used.
 }
 \examples{
 if (interactive()) {
