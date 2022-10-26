@@ -31,5 +31,6 @@ shinyApp(ui, server)
 
 ## Support for both client-side API and server-side API
 
-## Automatically switch to server-side if Mixpanel is blocked on the client-side
+## Automatically switch to server-side if Mixpanel is blocked on the client-side and send browser info
+
 

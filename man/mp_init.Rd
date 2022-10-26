@@ -12,7 +12,7 @@ mp_init(
   default_properties_js = list(),
   test_token = "",
   test_domains = list("127.0.0.1", "localhost"),
-  force = FALSE
+  track_server = FALSE
 )
 }
 \arguments{
@@ -38,12 +38,12 @@ See the section below on "Using a test Mixpanel project for testing/development"
 \item{test_domains}{List of domains where the \code{test_token} should be used. Must be used together
 with \code{test_token}. See the section below on "Using a test Mixpanel project for testing/development".}
 
-\item{force}{By default, {shinymixpanel} attempts to send all event tracking via the client-side API.
-This is the preferred way to use Mixpanel, as it automatically gathers some user data such as their
-physical location and browser information. However, some users may have disabled Mixpanel in their browser
-(for example using an AdBlock), and for these users it's not possible to connect to Mixpanel through
-the browser. If you set \code{force = TRUE}, then {shinymixpanel} will attempt to send events to Mixpanel
-using REST API calls when the client side is blocked.}
+\item{track_server}{By default, {shinymixpanel} attempts to send all event tracking via the user's browser.
+This is the preferred way to use Mixpanel, as it automatically gathers some user data from the web browser.
+However, some users may disable tracking in their browser (for example using an ad blocker), and for these
+users it's not possible to connect to Mixpanel through the browser. If you set \code{track_server = TRUE},
+then {shinymixpanel} will send events to Mixpanel using server API calls when the browser blocks Mixpanel
+tracking.}
 }
 \description{
 Call this function in a Shiny app's UI in order to initialize Mixpanel on the page. A project

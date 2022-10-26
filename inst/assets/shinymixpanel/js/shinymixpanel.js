@@ -7,12 +7,13 @@ let shinymixpanel = {
   defaultPropsJS : {},
   testToken : "",
   testDomains : {},
-  force : false,
+  trackServer : false,
 
   finalToken : "",
   reachable : true,
   waitingConfirmReachable : true,
   eventsQueue : [],
+  senderQueue : new ShinySenderQueue(),
 
   // Copied from github.com/daattali/shinybrowser@1.0.0
   getBrowser : function() {
@@ -170,8 +171,9 @@ let shinymixpanel = {
         for(h=0;h<i.length;h++)g(a,i[h]);var j="set set_once union unset remove delete".split(" ");a.get_group=function(){function b(c){d[c]=function(){call2_args=arguments;call2=[c].concat(Array.prototype.slice.call(call2_args,0));a.push([e,call2])}}for(var d={},e=["get_group"].concat(Array.prototype.slice.call(arguments,0)),c=0;c<j.length;c++)b(j[c]);return d};b._i.push([e,f,c])};b.__SV=1.2;e=f.createElement("script");e.type="text/javascript";e.async=!0;e.src="undefined"!==typeof MIXPANEL_CUSTOM_LIB_URL?
           MIXPANEL_CUSTOM_LIB_URL:"file:"===f.location.protocol&&"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js".match(/^\/\//)?"https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js":"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";g=f.getElementsByTagName("script")[0];g.parentNode.insertBefore(e,g)}})(document,window.mixpanel||[]);
 
-      mixpanel.init(shinymixpanel.finalToken, shinymixpanel.options);
+      shinymixpanel.options.ignore_dnt = true;
 
+      mixpanel.init(shinymixpanel.finalToken, shinymixpanel.options);
       shinymixpanel.identifyUser();
 
       shinymixpanel.checkReachable();
@@ -181,7 +183,7 @@ let shinymixpanel = {
   },
 
   checkReachable : function() {
-    if (!shinymixpanel.force) return;
+    if (!shinymixpanel.trackServer) return;
 
     if (typeof mixpanel === 'undefined') {
       shinymixpanel.setUnreachable();
@@ -197,6 +199,7 @@ let shinymixpanel = {
                 shinymixpanel.setUnreachable();
               } else {
                 shinymixpanel.waitingConfirmReachable = false;
+                shinymixpanel.eventsQueue = [];
               }
             }, 3000)
           }
@@ -208,24 +211,39 @@ let shinymixpanel = {
   },
 
   setUnreachable : function() {
-    if (!shinymixpanel.force) return;
+    if (!shinymixpanel.trackServer) return;
 
     shinymixpanel.waitingConfirmReachable = false;
     shinymixpanel.reachable = false;
 
-    let props = {};
-    props['$screen_height'] = screen.height;
-    props['$screen_width'] = screen.width;
-    props['$os'] = shinymixpanel.getOS().name;
-    props['$browser'] = shinymixpanel.getBrowser().name;
-    props['$browser_version'] = shinymixpanel.getBrowser().version;
-    shinymixpanel.copyProps(shinymixpanel.defaultPropsJS, props, true);
+    let client_props = {
+      '$screen_height' : screen.height,
+      '$screen_width' : screen.width,
+      '$os' : shinymixpanel.getOS().name,
+      '$browser' : shinymixpanel.getBrowser().name,
+      '$browser_version' : shinymixpanel.getBrowser().version,
+      '$current_url' : location.href
+    };
+
+    if (typeof shinymixpanel.options !== 'undefined' &&
+        typeof shinymixpanel.options.property_blacklist !== 'undefined') {
+      Object.keys(client_props).forEach(key => {
+        if (shinymixpanel.options.property_blacklist.includes(key)) {
+          delete client_props[key];
+        }
+      });
+    }
+
+    shinymixpanel.copyProps(shinymixpanel.defaultPropsJS, client_props, true);
 
     let data = {
       'token' : shinymixpanel.finalToken,
       'events' : shinymixpanel.eventsQueue,
-      'js_props' : props
+      'userid' : shinymixpanel.userid,
+      'client_props' : client_props,
+      'props' : shinymixpanel.defaultProps
     };
+
     Shiny.setInputValue("shinymixpanel__unreachable:shinymixpanel", data, {event: 'priority'});
     shinymixpanel.eventsQueue = [];
   },
@@ -251,47 +269,89 @@ $(function() { shinymixpanel.init(); });
 
 
 Shiny.addCustomMessageHandler('shinymixpanel.track', function(params) {
-  let props = {};
-  shinymixpanel.copyProps(shinymixpanel.defaultProps, props, false);
-  shinymixpanel.copyProps(shinymixpanel.defaultPropsJS, props, true);
-  shinymixpanel.copyProps(params.properties, props, false);
+  // Create two versions of the properties
+  // Full version which includes JS properties is for sending to Mixpanel immediately
+  // Partial version without JS properties is for potentially sendin to the server
+  // (since the server already has a copy of the JS properties + extra client-side properties)
+  let props_no_js = {};
+  let props_full = {};
+  shinymixpanel.copyProps(shinymixpanel.defaultProps, props_no_js, false);
+  shinymixpanel.copyProps(params.properties, props_no_js, false);
+  shinymixpanel.copyProps(shinymixpanel.defaultProps, props_full, false);
+  shinymixpanel.copyProps(shinymixpanel.defaultPropsJS, props_full, true);
+  shinymixpanel.copyProps(params.properties, props_full, false);
+
+  let serverEvent = {
+    event : params.event,
+    properties : props_no_js,
+    userid: shinymixpanel.userid
+  };
 
   // If the client is unreachable but this method still got called, it means
   // that an event was getting tracked before the server had a chance to learn
-  // that it's unreachable. So send the event back to the server
+  // that it's unreachable. So send the event back to the server.
   if (!shinymixpanel.reachable) {
-    Shiny.setInputValue(
-      "shinymixpanel__track:shinymixpanel",
-      { event : params.event, properties : props },
-      {event: 'priority'}
-    );
+    shinymixpanel.senderQueue.send("shinymixpanel__track:shinymixpanel", serverEvent);
     return;
   }
 
-  mixpanel.track(params.event, props);
+  mixpanel.track(params.event, props_full);
 
   // While we're still waiting to confirm if mixpanel is reachable by the client,
   // keep a record of all the events so that we can send them through the server
   // later if needed
-  if (shinymixpanel.waitingConfirmReachable && shinymixpanel.force) {
-    shinymixpanel.eventsQueue.push({ event : params.event, properties : props });
+  if (shinymixpanel.waitingConfirmReachable && shinymixpanel.trackServer) {
+    shinymixpanel.eventsQueue.push(serverEvent);
   }
 });
 
 Shiny.addCustomMessageHandler('shinymixpanel.setUserID', function(params) {
-  if (!shinymixpanel.reachable) return;
-
   shinymixpanel.userid = params.userid;
   shinymixpanel.identifyUser();
-
-  // When setting the user ID, it's possible that previously mixpanel
-  // was reachable (no adblocker) but the new user opted out of mixpanel,
-  // so need to check again
-  shinymixpanel.waitingConfirmReachable = true;
-  shinymixpanel.checkReachable();
 });
 
 Shiny.addCustomMessageHandler('shinymixpanel.setDefaultProps', function(params) {
-  if (!shinymixpanel.reachable) return;
   shinymixpanel.defaultProps = params.props;
 });
+
+
+// ShinySenderQueue code taken from Joe Cheng
+// https://github.com/rstudio/shiny/issues/1476
+function ShinySenderQueue() {
+  this.readyToSend = true;
+  this.queue = [];
+  this.timer = null;
+}
+ShinySenderQueue.prototype.send = function(name, value) {
+  var self = this;
+  function go() {
+    self.timer = null;
+    if (self.queue.length) {
+      var msg = self.queue.shift();
+      if (typeof Shiny === 'object' && typeof Shiny.compareVersion === 'function' &&
+          Shiny.compareVersion(Shiny.version, '>=', '1.1.0')) {
+        Shiny.setInputValue(msg.name, msg.value, {priority: "event"});
+      } else {
+        Shiny.onInputChange(msg.name, msg.value);
+      }
+      self.timer = setTimeout(go, 0);
+    } else {
+      self.readyToSend = true;
+    }
+  }
+  if (this.readyToSend) {
+    this.readyToSend = false;
+    if (typeof Shiny === 'object' && typeof Shiny.compareVersion === 'function' &&
+        Shiny.compareVersion(Shiny.version, '>=', '1.1.0')) {
+      Shiny.setInputValue(name, value, {priority: "event"});
+    } else {
+      Shiny.onInputChange(name, value);
+    }
+    this.timer = setTimeout(go, 0);
+  } else {
+    this.queue.push({name: name, value: value});
+    if (!this.timer) {
+      this.timer = setTimeout(go, 0);
+    }
+  }
+};

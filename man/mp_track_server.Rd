@@ -2,7 +2,7 @@
 % Please edit documentation in R/mixpanel.R
 \name{mp_track_server}
 \alias{mp_track_server}
-\title{Track an event to Mixpanel using the server-side REST API}
+\title{Track an event to Mixpanel using the server-side API}
 \usage{
 mp_track_server(event, properties = list(), userid = "", token = "")
 }
@@ -17,10 +17,9 @@ mp_track_server(event, properties = list(), userid = "", token = "")
 \code{SHINYMIXPANEL_TOKEN} will be used.}
 }
 \description{
-Using the client-side API (\verb{[mp_track()]}) is preferable because sending data through the
-browser automatically includes more data about the user, such as the user's physical location,
-browser information, and URL. The advantage of using the server-side API is that it cannot be
-blocked with a browser Ad Blocker.\cr\cr
+Using the client-side API (\verb{[mp_track()]}) is preferable because sending data through the web
+browser automatically includes more data about the user. The advantage of using the server-side
+API is that it cannot be blocked with an ad blocker.\cr\cr
 The server-side API can also be used by any R script outside of a Shiny app, while the client-side
 API can only be used in a Shiny app.
 }

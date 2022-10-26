@@ -9,16 +9,21 @@
     if (name == "shinymixpanel__unreachable") {
       session$userData$shinymixpanel_unreachable <- TRUE
       session$userData$shinymixpanel_token <- data$token
-      session$userData$shinymixpanel_defaultProps <- append(
-        session$userData$shinymixpanel_defaultProps,
-        data$js_props
-      )
+      if (is_empty(session$userData$shinymixpanel_userid)) {
+        session$userData$shinymixpanel_userid <- data$userid
+      }
+      if (is_empty(session$userData$shinymixpanel_defaultProps)) {
+        session$userData$shinymixpanel_defaultProps <- data$props
+      }
+      session$userData$shinymixpanel_clientProps <- data$client_props
+
       lapply(data$events, function(x) {
-        mp_track(x$event, x$properties)
+        mp_track_server_engine(x$event, x$properties, x$userid, ignore_cache = TRUE)
       })
+
       NULL
     } else if (name == "shinymixpanel__track") {
-      mp_track(data$event, data$properties)
+      mp_track_server_engine(data$event, data$properties, data$userid, ignore_cache = TRUE)
       NULL
     } else {
       data

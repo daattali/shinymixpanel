@@ -2,7 +2,7 @@
 % Please edit documentation in R/mixpanel.R
 \name{mp_userid}
 \alias{mp_userid}
-\title{Associate all Mixpanel events to a user}
+\title{Associate Mixpanel events with a specific user}
 \usage{
 mp_userid(userid)
 }
