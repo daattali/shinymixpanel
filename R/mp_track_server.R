@@ -26,6 +26,7 @@ mp_track_server <- function(event, properties = list(), userid = "", token = "")
                          ignore_cache = FALSE)
 }
 
+# ignore_cache means to only use the parameters that are passed in and not use previous stored values
 mp_track_server_engine <- function(event, properties = list(), userid = "", token = "", ignore_cache = FALSE) {
   if (Sys.getenv("SHINYMIXPANEL_DISABLE", "") != "") {
     return(FALSE)
