@@ -271,10 +271,10 @@ $(function() { shinymixpanel.init(); });
 Shiny.addCustomMessageHandler('shinymixpanel.track', function(params) {
   // Create two versions of the properties
   // Full version which includes JS properties is for sending to Mixpanel immediately
-  // Partial version without JS properties is for potentially sendin to the server
+  // Partial version without JS properties is for potentially sending to the server
   // (since the server already has a copy of the JS properties + extra client-side properties)
-  let props_no_js = {};
   let props_full = {};
+  let props_no_js = {};
   shinymixpanel.copyProps(shinymixpanel.defaultProps, props_no_js, false);
   shinymixpanel.copyProps(params.properties, props_no_js, false);
   shinymixpanel.copyProps(shinymixpanel.defaultProps, props_full, false);
