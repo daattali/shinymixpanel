@@ -10,7 +10,7 @@
 #' `SHINYMIXPANEL_TOKEN` will be used.
 #' @param userid A user ID to identify with Mixpanel on the current page. If provided, this user ID
 #' will be associated with all event tracking calls. If the user ID is not known in the UI and
-#' is only known in the server, call [mp_userid()] from the server.
+#' is only known in the server, call `[mp_userid()]` from the server.
 #' @param options List of configuration options to pass to Mixpanel. A full list of supported
 #' options is available in [Mixpanel's documentation](https://developer.mixpanel.com/docs/javascript-full-api-reference#mixpanelset_config).
 #' See the examples below for sample usage.
@@ -21,6 +21,13 @@
 #' See the section below on "Using a test Mixpanel project for testing/development".
 #' @param test_domains List of domains where the `test_token` should be used. Must be used together
 #' with `test_token`. See the section below on "Using a test Mixpanel project for testing/development".
+#' @param track_server By default, {shinymixpanel} attempts to send all event tracking via the user's browser.
+#' This is the preferred way to use Mixpanel, as it automatically gathers some user data from the web browser.
+#' However, some users may disable tracking in their browser (for example using an ad blocker), and for these
+#' users it's not possible to connect to Mixpanel through the browser. If you set `track_server = TRUE`,
+#' then {shinymixpanel} will send events to Mixpanel using server API calls when the browser blocks Mixpanel
+#' tracking. In this case, {shinymixpanel} will try to detect some browser data and send it along:
+#' operating system, browser name, screen size, and current URL.
 #' @section Using a test Mixpanel project for testing/development:
 #' While developing or testing your Shiny app, you can use the `SHINYMIXPANEL_DISABLE` envvar
 #' to disable Mixpanel tracking. However, sometimes you may want to still have tracking but send the
@@ -74,7 +81,8 @@
 mp_init <- function(
     token, userid = "", options = list(),
     default_properties = list(), default_properties_js = list(),
-    test_token = "", test_domains = list("127.0.0.1", "localhost")
+    test_token = "", test_domains = list("127.0.0.1", "localhost"),
+    track_server = FALSE
 ) {
   if (Sys.getenv("SHINYMIXPANEL_DISABLE", "") != "") {
     message("Note: {shinymixpanel} is disabled through SHINYMIXPANEL_DISABLE envvar")
@@ -89,34 +97,28 @@ mp_init <- function(
   if (missing(token)) {
     token <- Sys.getenv("SHINYMIXPANEL_TOKEN", "")
     if (token == "") {
-      stop("mp_init: Cannot initialize mixpanel without a project token", call. = FALSE)
+      stop("mp_init: Cannot initialize mixpanel without a project token (can set it via `SHINYMIXPANEL_TOKEN` envvar)", call. = FALSE)
     }
   }
 
-  userid <- empty_to_null(userid)
-  options <- empty_to_null(options)
-  default_properties <- empty_to_null(default_properties)
-  default_properties_js <- empty_to_null(default_properties_js)
-  test_token <- empty_to_null(test_token)
-  test_domains <- empty_to_null(test_domains)
-
   js_vars <- 'shinymixpanel.token = "{ token }";'
-  if (!is.null(options)) {
+  if (!is_empty(options)) {
     js_vars <- paste(js_vars, 'shinymixpanel.options = { jsonlite::toJSON(options, auto_unbox = TRUE) };')
   }
-  if (!is.null(userid)) {
+  if (!is_empty(userid)) {
     js_vars <- paste(js_vars, 'shinymixpanel.userid = "{ userid }";')
   }
-  if (!is.null(default_properties)) {
+  if (!is_empty(default_properties)) {
     js_vars <- paste(js_vars, 'shinymixpanel.defaultProps = { jsonlite::toJSON(default_properties, auto_unbox = TRUE) };')
   }
-  if (!is.null(default_properties_js)) {
+  if (!is_empty(default_properties_js)) {
     js_vars <- paste(js_vars, 'shinymixpanel.defaultPropsJS = { jsonlite::toJSON(default_properties_js, auto_unbox = TRUE) };')
   }
-  if (!is.null(test_token) && !is.null(test_domains) && length(test_domains) >= 1) {
+  if (!is_empty(test_token) && !is_empty(test_domains) && length(test_domains) >= 1) {
     js_vars <- paste(js_vars, 'shinymixpanel.testToken = "{ test_token }";')
     js_vars <- paste(js_vars, 'shinymixpanel.testDomains = { jsonlite::toJSON(test_domains, auto_unbox = TRUE) };')
   }
+  js_vars <- paste(js_vars, 'shinymixpanel.trackServer = { jsonlite::toJSON(track_server, auto_unbox = TRUE) };')
 
   htmltools::attachDependencies(
     shiny::singleton(shiny::tags$head(shiny::tags$script(
@@ -124,133 +126,4 @@ mp_init <- function(
     ))),
     html_dependency_mixpanel()
   )
-}
-
-#' Track an event to Mixpanel
-#'
-#' @param event Name of the event
-#' @param properties List of properties to send for this event
-#' @param properties_js List of properties to be computed client-side (with JavaScript
-#' in the user's browser)
-#' @examples
-#' if (interactive()) {
-#'   library(shiny)
-#'   library(shinymixpanel)
-#'
-#'   ui <- fluidPage(
-#'     mp_init(YOUR_PROJECT_TOKEN)
-#'   )
-#'
-#'   server <- function(input, output, session) {
-#'     mp_track("page init")
-#'   }
-#'
-#'   shinyApp(ui, server)
-#' }
-#' @export
-mp_track <- function(event, properties = list(), properties_js = list()) {
-  if (missing(event)) {
-    stop("mp_track: An `event` is required", call. = FALSE)
-  }
-
-  session <- shiny::getDefaultReactiveDomain()
-  session$sendCustomMessage(
-    'shinymixpanel.track',
-    list(
-      event = event,
-      properties = properties,
-      properties_js = properties_js
-    )
-  )
-}
-
-#' Associate all Mixpanel events to a user
-#'
-#' After calling `mp_userid()`, all subsequent Mixpanel events will be associated with
-#' this user ID.
-#'
-#' @param userid A user ID to identify with Mixpanel.
-#' @examples
-#' if (interactive()) {
-#'   library(shiny)
-#'   library(shinymixpanel)
-#'
-#'   ui <- fluidPage(
-#'     mp_init(YOUR_PROJECT_TOKEN)
-#'   )
-#'
-#'   server <- function(input, output, session) {
-#'     mp_userid("fa8762b3a")
-#'     mp_track("page init")
-#'   }
-#'
-#'   shinyApp(ui, server)
-#' }
-#' @export
-mp_userid <- function(userid) {
-  if (missing(userid)) {
-    stop("mp_userid: A `userid` is required", call. = FALSE)
-  }
-  session <- shiny::getDefaultReactiveDomain()
-  session$sendCustomMessage('shinymixpanel.setUserID', list(userid = userid))
-}
-
-#' Set default properties for Mixpanel events
-#'
-#' These properties will be sent with every subsequent Mixpanel event.
-#' @param properties List of properties.
-#' @examples
-#' if (interactive()) {
-#'   library(shiny)
-#'   library(shinymixpanel)
-#'
-#'   ui <- fluidPage(
-#'     mp_init(YOUR_PROJECT_TOKEN)
-#'   )
-#'
-#'   server <- function(input, output, session) {
-#'     mp_default_props(list(foo = "bar", shiny_version = as.character(packageVersion("shiny"))))
-#'     mp_track("page init")
-#'   }
-#'
-#'   shinyApp(ui, server)
-#' }
-#' @export
-mp_default_props <- function(properties) {
-  if (missing(properties)) {
-    stop("mp_default_props: A `properties` list is required", call. = FALSE)
-  }
-  session <- shiny::getDefaultReactiveDomain()
-  session$sendCustomMessage('shinymixpanel.setDefaultProps', list(props = properties))
-}
-
-#' Set default client-side properties for Mixpanel events
-#'
-#' These properties will be sent with every subsequent Mixpanel event. The properties
-#' will be computed client-side, on the user's browser.
-#' @param properties List of properties. The value of each element in the list will be
-#' treated as JavaScript code to be evaluated in the client's browser.
-#' @examples
-#' if (interactive()) {
-#'   library(shiny)
-#'   library(shinymixpanel)
-#'
-#'   ui <- fluidPage(
-#'     mp_init(YOUR_PROJECT_TOKEN)
-#'   )
-#'
-#'   server <- function(input, output, session) {
-#'     mp_default_props_js(list(size = "screen.width", ua = "navigator.userAgent"))
-#'     mp_track("page init")
-#'   }
-#'
-#'   shinyApp(ui, server)
-#' }
-#' @export
-mp_default_props_js <- function(properties) {
-  if (missing(properties)) {
-    stop("mp_default_props_js: A `properties` list is required", call. = FALSE)
-  }
-  session <- shiny::getDefaultReactiveDomain()
-  session$sendCustomMessage('shinymixpanel.setDefaultPropsJS', list(props = properties))
 }
