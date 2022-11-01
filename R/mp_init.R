@@ -2,7 +2,9 @@
 #'
 #' Call this function in a Shiny app's UI in order to initialize Mixpanel on the page. A project
 #' token is required, which can either be provided using the `token` parameter or with the
-#' `SHINYMIXPANEL_TOKEN` environment variable.
+#' `SHINYMIXPANEL_TOKEN` environment variable.\cr\cr
+#' See the full \href{https://github.com/daattali/shinymixpanel#readme}{README} on
+#' GitHub for more details.\cr\cr
 #'
 #' @note Tracking can be temporarily disabled, for example while developing or testing, by setting
 #' the `SHINYMIXPANEL_DISABLE` environment variable to `"1"`.
@@ -10,7 +12,7 @@
 #' `SHINYMIXPANEL_TOKEN` will be used.
 #' @param userid A user ID to identify with Mixpanel on the current page. If provided, this user ID
 #' will be associated with all event tracking calls. If the user ID is not known in the UI and
-#' is only known in the server, call `[mp_userid()]` from the server.
+#' is only known in the server, call [mp_userid()] from the server.
 #' @param options List of configuration options to pass to Mixpanel. A full list of supported
 #' options is available in [Mixpanel's documentation](https://developer.mixpanel.com/docs/javascript-full-api-reference#mixpanelset_config).
 #' See the examples below for sample usage.

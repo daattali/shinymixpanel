@@ -17,7 +17,7 @@ mp_track_server(event, properties = list(), userid = "", token = "")
 \code{SHINYMIXPANEL_TOKEN} will be used.}
 }
 \description{
-Using the client-side API (\verb{[mp_track()]}) is preferable because sending data through the web
+Using the client-side API (\code{\link[=mp_track]{mp_track()}}) is preferable because sending data through the web
 browser automatically includes more data about the user. The advantage of using the server-side
 API is that it cannot be blocked with an ad blocker.\cr\cr
 The server-side API can also be used by any R script outside of a Shiny app, while the client-side

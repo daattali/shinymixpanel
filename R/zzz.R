@@ -42,3 +42,7 @@
 
   shiny::removeInputHandler("shinymixpanel")
 }
+
+# Empty imports to get rid of CRAN check warnings
+#' @importFrom jsonlite toJSON
+NULL

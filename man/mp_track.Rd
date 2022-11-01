@@ -15,8 +15,10 @@ mp_track(event, properties = list())
 When called from a Shiny app, the Mixpanel client-side API is used, which sends events through the
 user's web browser. This is the preferred way to use Mixpanel, as it automatically gathers some user
 data from the browser. If you prefer to use the server-side API explicitly, use
-\verb{[mp_track_server()]}.\cr\cr
-When called outside a Shiny app, \verb{[mp_track_server()]} is used.
+\code{\link[=mp_track_server]{mp_track_server()}}.\cr\cr
+When called outside a Shiny app, \code{\link[=mp_track_server]{mp_track_server()}} is used.\cr\cr
+See the full \href{https://github.com/daattali/shinymixpanel#readme}{README} on
+GitHub for more details.\cr\cr
 }
 \examples{
 if (interactive()) {

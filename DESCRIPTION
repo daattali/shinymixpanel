@@ -1,12 +1,17 @@
 Package: shinymixpanel
-Title: Track User Data with 'Mixpanel' in 'Shiny' Apps or 'R' Scripts
+Title: Track User Interactions with 'Mixpanel' in 'R' and 'Shiny' Apps
 Version: 0.1.0.9001
 Authors@R: c(
     person("Dean", "Attali",
         email = "daattali@gmail.com",
         role = c("aut", "cre")
     ))
-Description: TODO
+Description: Easily track user interactions ("events") and user data from
+    'Shiny' apps to Mixpanel. Events can also be tracked in plain 'R' scripts
+    that are not 'Shiny' apps. Event data in 'Shiny' apps is sent to Mixpanel
+    via the browser by default, or via server API calls if an ad blocker is
+    used. Mixpanel <https://mixpanel.com> is an analytics platform that allows
+    you to view all tracked event data in convenient dashboards online.
 URL: https://github.com/daattali/shinymixpanel
 BugReports: https://github.com/daattali/shinymixpanel/issues
 Depends:
@@ -21,7 +26,7 @@ Imports:
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

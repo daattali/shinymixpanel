@@ -21,7 +21,7 @@ mp_init(
 
 \item{userid}{A user ID to identify with Mixpanel on the current page. If provided, this user ID
 will be associated with all event tracking calls. If the user ID is not known in the UI and
-is only known in the server, call \verb{[mp_userid()]} from the server.}
+is only known in the server, call \code{\link[=mp_userid]{mp_userid()}} from the server.}
 
 \item{options}{List of configuration options to pass to Mixpanel. A full list of supported
 options is available in \href{https://developer.mixpanel.com/docs/javascript-full-api-reference#mixpanelset_config}{Mixpanel's documentation}.
@@ -49,7 +49,9 @@ operating system, browser name, screen size, and current URL.}
 \description{
 Call this function in a Shiny app's UI in order to initialize Mixpanel on the page. A project
 token is required, which can either be provided using the \code{token} parameter or with the
-\code{SHINYMIXPANEL_TOKEN} environment variable.
+\code{SHINYMIXPANEL_TOKEN} environment variable.\cr\cr
+See the full \href{https://github.com/daattali/shinymixpanel#readme}{README} on
+GitHub for more details.\cr\cr
 }
 \note{
 Tracking can be temporarily disabled, for example while developing or testing, by setting
