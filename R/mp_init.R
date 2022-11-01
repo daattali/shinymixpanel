@@ -35,11 +35,13 @@
 #' to disable Mixpanel tracking. However, sometimes you may want to still have tracking but send the
 #' data to a different "test" project rather than the real production Mixpanel project. The {shinymixpanel}
 #' package supports this usecase via the `test_token` and `test_domains` parameters.\cr\cr
-#' If both of these parameters are provided, then if the Shiny app is in a domain listed in the
-#' `test_domains` list, the data will be sent to the project specified by `test_token` instead.
+#' When both of these parameters are provided, if the Shiny app is in a domain that's listed in the
+#' `test_domains` list, then data will be sent to the `test_token` project instead.
 #' Note that the domains in `test_domains` are assumed to be suffixes. This means that if you provide
 #' `"example.com"` as a test domain, then any user on `example.com` or `test.example.com` will use
-#' the test project.
+#' the test project.\cr\rc
+#' By default, `test_domains` is set to `127.0.0.1` and `localhost`, which means that if you provide a
+#' `test_token`, that project will receive all data while you're running the Shiny app locally.
 #' @examples
 #' if (interactive()) {
 #'

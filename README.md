@@ -55,6 +55,8 @@ All events data for all users can be viewed on [Mixpanel's dashboard](https://mi
   - [How to use](#usage)
   - [Identifying users](#identify)
   - [Event properties](#props)
+  - [Getting around ad blockers](#adblockers)
+  - [Using {shinymixpanel} during development/testing](#testing)
   
 <h2 id="sponsors">Sponsors 🏆</h2>
 
@@ -162,13 +164,28 @@ There may be some information you'd like to track that's only accessible from th
 For example, using the following call:
 
 ```r
-mp_init(mixpanel_token, default_properties_js = list(size = "screen.width", ua = "navigator.userAgent", domain = "location.hostname"))
+mp_init(mixpanel_token, default_properties_js = list(
+  size = "screen.width", ua = "navigator.userAgent", domain = "location.hostname"))
 ```
 
-Will result in 3 variables to get computed right away in the user's browser: "size" (the screen's width), "ua" (the browser's user agent string), and "domain" (the current webpage's domain). These 3 properties will be sent along with any `mp_track()` calls.
+Will result in 3 variables getting computed right away in the user's browser: "size" (the screen's width), "ua" (the browser's user-agent string), and "domain" (the current webpage's domain). These 3 properties will be sent along with any `mp_track()` calls.
 
-## Development/testing (SHINYMIXPANEL_DISABLE, test token)
+<h2 id="adblockers">Getting around ad blockers</h2>
 
-## Support for both client-side API and server-side API
+By default, {shinymixpanel} attempts to send all event tracking via the user's browser (using Mixpanel's JavaScript API). This is the preferred way to use Mixpanel, as it automatically gathers some user data from the web browser and sends many additional properties.
 
-## Automatically switch to server-side if Mixpanel is blocked on the client-side and send browser info
+However, some users may disable tracking through their browser -- for example using an ad blocker -- and for these users it's not possible to connect to Mixpanel through the browser. Luckily, {shinymixpanel} has an easy solution to that: setting `track_server = TRUE` in `mp_init()`. When `track_server` is off, then any browser that is blocked from communicating with Mixpanel will simply not send Mixpanel any events. But if `track_server` is on, then {shinymixpanel} will send events to Mixpanel using server API calls (Mixpanel's REST API) when the browser is blocking Mixpanel tracking. When this happens, {shinymixpanel} will even try to detect some browser data and send it along as additional properties: browser type, screen size, operating system, and current URL.
+
+<h2 id="testing">Using {shinymixpanel} during development/testing</h2>
+
+While developing or testing your Shiny app, you may not want to have Mixpanel tracking turned on. You have two options:
+
+1. Mixpanel tracking can be temporarily disabled by setting the `SHINYMIXPANEL_DISABLE` environment variable to "1". When this environment variable is set, any calls to `mp_init()` and `mp_track()` are ignored.
+
+2. You may prefer to still use Mixpanel, but send the data to a different "test" project rather than the real production Mixpanel project. This is supported via the `test_token` and `test_domains` parameters of `mp_init()`.
+
+    When both of these parameters are provided, if the Shiny app is in a domain that's listed in the `test_domains` list, then data will be sent to the `test_token` project instead. Note that the domains in `test_domains` are assumed to be suffixes. This means that if you provide "example.com" as a test domain, then any user on `example.com` or `test.example.com` will use the test project.
+  
+    By default, `test_domains` is set to `127.0.0.1` and `localhost`, which means that if you provide a `test_token`, that project will receive all data while you're running the Shiny app locally. 
+
+
