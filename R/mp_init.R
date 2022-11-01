@@ -39,7 +39,7 @@
 #' `test_domains` list, then data will be sent to the `test_token` project instead.
 #' Note that the domains in `test_domains` are assumed to be suffixes. This means that if you provide
 #' `"example.com"` as a test domain, then any user on `example.com` or `test.example.com` will use
-#' the test project.\cr\rc
+#' the test project.\cr\cr
 #' By default, `test_domains` is set to `127.0.0.1` and `localhost`, which means that if you provide a
 #' `test_token`, that project will receive all data while you're running the Shiny app locally.
 #' @examples

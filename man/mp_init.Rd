@@ -67,7 +67,7 @@ When both of these parameters are provided, if the Shiny app is in a domain that
 \code{test_domains} list, then data will be sent to the \code{test_token} project instead.
 Note that the domains in \code{test_domains} are assumed to be suffixes. This means that if you provide
 \code{"example.com"} as a test domain, then any user on \code{example.com} or \code{test.example.com} will use
-the test project.\cr\rc
+the test project.\cr\cr
 By default, \code{test_domains} is set to \verb{127.0.0.1} and \code{localhost}, which means that if you provide a
 \code{test_token}, that project will receive all data while you're running the Shiny app locally.
 }
