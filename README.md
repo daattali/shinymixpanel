@@ -57,6 +57,7 @@ All events data for all users can be viewed on [Mixpanel's dashboard](https://mi
   - [Event properties](#props)
   - [Getting around ad blockers](#adblockers)
   - [Using {shinymixpanel} during development/testing](#testing)
+  - [Outside of Shiny apps](#server)
   
 <h2 id="sponsors">Sponsors 🏆</h2>
 
@@ -188,4 +189,23 @@ While developing or testing your Shiny app, you may not want to have Mixpanel tr
   
     By default, `test_domains` is set to `127.0.0.1` and `localhost`, which means that if you provide a `test_token`, that project will receive all data while you're running the Shiny app locally. 
 
+<h2 id="server">Outside of Shiny apps</h2>
 
+Even though {shinymixpanel} was mainly developed with Shiny apps in mind (using Mixpanel's client-side API), it can also be used to send events to Mixpanel from any R code using Mixpanel's server-side API.
+
+To use {shinymixpanel} in a non-Shiny context, you don't need to call `mp_init()`. Rather, you can just call `mp_track_server()` at any time. A token is required, either via the `token` argument or by setting the `SHINYMIXPANEL_TOKEN` environment variable. If you call `mp_userid()` or `mp_default_props()`, then all subsequent event trackings will use the corresponding user ID and properties, just like in the client-side version.
+
+The main advantage of the client-side event tracking is that it will automatically gather some user data from the web browser and send it as additional properties. The main advantage of server-side tracking is that it cannot be blocked by a browser's ad blocker.
+
+Here is an example of using {shinymixpanel} outside of Shiny:
+
+```r
+Sys.setenv("SHINYMIXPANEL_TOKEN" = YOUR_PROJECT_TOKEN)
+mp_userid("abcd1234")
+mp_default_props(list("foo" = "bar", "text" = "hello"))
+mp_track_server("greet", list(name = "dean"))
+```
+
+The above code will send a "greet" event to Mixpanel, associate it to user "abcd1234", along with properties {"foo" = "bar", "text" = "hello", "name" = "dean"}.
+
+Note that calling `mp_track()` outside of a Shiny app is equivalent to calling `mp_track_server()`.
