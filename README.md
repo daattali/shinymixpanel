@@ -175,7 +175,9 @@ Will result in 3 variables getting computed right away in the user's browser: "s
 
 By default, {shinymixpanel} attempts to send all event tracking via the user's browser (using Mixpanel's JavaScript API). This is the preferred way to use Mixpanel, as it automatically gathers some user data from the web browser and sends many additional properties.
 
-However, some users may disable tracking through their browser -- for example using an ad blocker -- and for these users it's not possible to connect to Mixpanel through the browser. Luckily, {shinymixpanel} has an easy solution to that: setting `track_server = TRUE` in `mp_init()`. When `track_server` is off, then any browser that is blocked from communicating with Mixpanel will simply not send Mixpanel any events. But if `track_server` is on, then {shinymixpanel} will send events to Mixpanel using server API calls (Mixpanel's REST API) when the browser is blocking Mixpanel tracking. When this happens, {shinymixpanel} will even try to detect some browser data and send it along as additional properties: browser type, screen size, operating system, and current URL.
+However, some users may disable tracking through their browser -- for example using an ad blocker -- and for these users it's not possible to connect to Mixpanel through the browser. Luckily, {shinymixpanel} has an easy solution to this: setting `track_server = TRUE` in `mp_init()`.
+
+When `track_server` is off, then any browser that is blocked from communicating with Mixpanel will simply not send Mixpanel any events. But if `track_server` is on, then {shinymixpanel} will send events to Mixpanel using server API calls (Mixpanel's REST API) when the browser is blocking Mixpanel tracking. When this happens, {shinymixpanel} will even try to detect some user data and send it along as additional properties: browser type, screen size, operating system, and current URL.
 
 <h2 id="testing">Using {shinymixpanel} during development/testing</h2>
 
@@ -193,9 +195,9 @@ While developing or testing your Shiny app, you may not want to have Mixpanel tr
 
 Even though {shinymixpanel} was mainly developed with Shiny apps in mind (using Mixpanel's client-side API), it can also be used to send events to Mixpanel from any R code using Mixpanel's server-side API.
 
-To use {shinymixpanel} in a non-Shiny context, you don't need to call `mp_init()`. Rather, you can just call `mp_track_server()` at any time. A token is required, either via the `token` argument or by setting the `SHINYMIXPANEL_TOKEN` environment variable. If you call `mp_userid()` or `mp_default_props()`, then all subsequent event trackings will use the corresponding user ID and properties, just like in the client-side version.
+To use {shinymixpanel} in a non-Shiny context, you don't need to call `mp_init()`. Rather, you can just call `mp_track_server()` at any time. A token must be provided, either via the `token` argument or by setting the `SHINYMIXPANEL_TOKEN` environment variable. If you call `mp_userid()` or `mp_default_props()`, then all subsequent event trackings will use the corresponding user ID and properties, just like in the client-side version.
 
-The main advantage of the client-side event tracking is that it will automatically gather some user data from the web browser and send it as additional properties. The main advantage of server-side tracking is that it cannot be blocked by a browser's ad blocker.
+The main advantage of client-side event tracking is that it will automatically gather some user data from the web browser and send it as additional properties. The main advantage of server-side tracking is that it cannot be blocked by a browser's ad blocker.
 
 Here is an example of using {shinymixpanel} outside of Shiny:
 
@@ -208,4 +210,4 @@ mp_track_server("greet", list(name = "dean"))
 
 The above code will send a "greet" event to Mixpanel, associate it to user "abcd1234", along with properties {"foo" = "bar", "text" = "hello", "name" = "dean"}.
 
-Note that calling `mp_track()` outside of a Shiny app is equivalent to calling `mp_track_server()`.
+Note that calling `mp_track()` outside of a Shiny app is always equivalent to calling `mp_track_server()`. Calling `mp_track()` inside a Shiny app will attempt to use the client-side API, but if an ad blocker is used and `track_server` is on, then `mp_track_server()` will be used as an alternative.
