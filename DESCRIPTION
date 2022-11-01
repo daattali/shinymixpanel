@@ -1,6 +1,6 @@
 Package: shinymixpanel
 Title: Track User Interactions with 'Mixpanel' in 'R' and 'Shiny' Apps
-Version: 0.1.0.9001
+Version: 0.1.0.9002
 Authors@R: c(
     person("Dean", "Attali",
         email = "daattali@gmail.com",
