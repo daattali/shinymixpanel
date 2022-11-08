@@ -4,7 +4,8 @@ Version: 0.1.0.9002
 Authors@R: c(
     person("Dean", "Attali",
         email = "daattali@gmail.com",
-        role = c("aut", "cre")
+        role = c("aut", "cre"),
+        comment = c(ORCID="0000-0002-5645-3493")
     ))
 Description: Easily track user interactions ("events") and user data from
     'Shiny' apps to Mixpanel. Events can also be tracked in plain 'R' scripts
