@@ -3,8 +3,6 @@
 .shinymixpanelenv$defaultProps <- list()
 
 .onLoad <- function(libname, pkgname) {
-  shiny::addResourcePath(prefix = "shinymixpanel-assets", directoryPath = system.file("assets", package = "shinymixpanel"))
-
   shiny::registerInputHandler("shinymixpanel", force = TRUE, function(data, session, name) {
     if (name == "shinymixpanel__unreachable") {
       session$userData$shinymixpanel_unreachable <- TRUE
@@ -36,10 +34,6 @@
 }
 
 .onUnload <- function(libname, pkgname) {
-  if (utils::packageVersion("shiny") >= "1.4.0") {
-    shiny::removeResourcePath("shinymixpanel-assets")
-  }
-
   shiny::removeInputHandler("shinymixpanel")
 }
 

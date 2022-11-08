@@ -1,9 +1,9 @@
 html_dependency_mixpanel <- function() {
   htmltools::htmlDependency(
-    name = "shinymixpanel",
-    version = utils::packageVersion("shinymixpanel"),
-    src = c(href = "shinymixpanel-assets/shinymixpanel"),
+    name = "shinymixpanel-binding",
+    version = as.character(utils::packageVersion("shinymixpanel")),
     package = "shinymixpanel",
+    src = "assets/shinymixpanel",
     script = c("js/shinymixpanel.js")
   )
 }
