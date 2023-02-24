@@ -12,7 +12,8 @@ mp_init(
   default_properties_js = list(),
   test_token = "",
   test_domains = list("127.0.0.1", "localhost"),
-  track_server = FALSE
+  track_client = TRUE,
+  track_server = TRUE
 )
 }
 \arguments{
@@ -38,13 +39,12 @@ See the section below on "Using a test Mixpanel project for testing/development"
 \item{test_domains}{List of domains where the \code{test_token} should be used. Must be used together
 with \code{test_token}. See the section below on "Using a test Mixpanel project for testing/development".}
 
-\item{track_server}{By default, {shinymixpanel} attempts to send all event tracking via the user's browser.
-This is the preferred way to use Mixpanel, as it automatically gathers some user data from the web browser.
-However, some users may disable tracking in their browser (for example using an ad blocker), and for these
-users it's not possible to connect to Mixpanel through the browser. If you set \code{track_server = TRUE},
-then {shinymixpanel} will send events to Mixpanel using server API calls when the browser blocks Mixpanel
-tracking. In this case, {shinymixpanel} will try to detect some browser data and send it along:
-operating system, browser name, screen size, and current URL.}
+\item{track_client}{Whether to allow tracking via the web browser (client). Default is \code{TRUE}.
+Note that an ad blocker may restrict the ability to use client-side tracking. See the section below on
+"Client-side vs server-side tracking".}
+
+\item{track_server}{Whether to allow tracking via R API calls (server). Default is \code{TRUE}.
+See the section below on "Client-side vs server-side tracking".}
 }
 \description{
 Call this function in a Shiny app's UI in order to initialize Mixpanel on the page. A project
@@ -57,11 +57,36 @@ GitHub for more details.\cr\cr
 Tracking can be temporarily disabled, for example while developing or testing, by setting
 the \code{SHINYMIXPANEL_DISABLE} environment variable to \code{"1"}.
 }
+\section{Client-side vs server-side tracking}{
+
+When calling \code{\link[=mp_track]{mp_track()}} inside a Shiny app, events data can be sent to Mixpanel in one of two ways: using client-side
+or server-side tracking. When calling \code{\link[=mp_track]{mp_track()}} outside of Shiny, server-side is always used.\cr\cr
+\strong{Client-side tracking} is done via the user's browser (with Javascript). This is
+generally the preferred way to use Mixpanel, since Mixpanel automatically collects some additional information
+from the web browser. However, some users may disable tracking in their browser (for example using an ad blocker),
+and for these users it's not possible to perform client-side tracking.\cr\cr
+With \strong{server-side tracking}, \{shinymixpanel\} will send events to Mixpanel via R API calls. The benefit of
+server-side tracking is that it's unaffected by ad blockers. However, when using server-side tracking, Mixpanel
+does not automatically collect the same attributes that it does in client-side. To compensate for that,
+\{shinymixpanel\} will try to detect some browser data and send it along with any event: user's operating system,
+browser name, screen size, and current URL (these are a subset of the attributes that client-side tracking detects).\cr\cr
+The parameters \code{track_client} and \code{track_server} of \code{\link[=mp_init]{mp_init()}} are both set to \code{TRUE} by default, and they can be used to
+disable one of the two tracking methods:
+\itemize{
+\item If both are set to \code{FALSE}, then Mixpanel tracking is essentially turned off
+\item If only \code{track_client} is \code{TRUE}, then \{shinymixpanel\} will only attempt to use client-side tracking.
+Note that this means that if the user has an ad blocker, then no events will be tracked.
+\item If only \code{track_server} is \code{TRUE}, then all event tracking will be done with server-side tracking.
+\item If both are \code{TRUE}, then \{shinymixpanel\} will prioritize trying to use client-side tracking. If an ad
+blocker is present, then it will automatically switch to using server-side tracking.
+}
+}
+
 \section{Using a test Mixpanel project for testing/development}{
 
 While developing or testing your Shiny app, you can use the \code{SHINYMIXPANEL_DISABLE} envvar
 to disable Mixpanel tracking. However, sometimes you may want to still have tracking but send the
-data to a different "test" project rather than the real production Mixpanel project. The {shinymixpanel}
+data to a different "test" project rather than the real production Mixpanel project. The \{shinymixpanel\}
 package supports this usecase via the \code{test_token} and \code{test_domains} parameters.\cr\cr
 When both of these parameters are provided, if the Shiny app is in a domain that's listed in the
 \code{test_domains} list, then data will be sent to the \code{test_token} project instead.

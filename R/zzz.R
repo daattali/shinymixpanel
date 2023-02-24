@@ -20,12 +20,12 @@
       }
 
       lapply(data$events, function(x) {
-        mp_track_server_engine(x$event, x$properties, x$userid, ignore_cache = TRUE)
+        mp_track_server_engine(x$event, x$properties, userid = x$userid, ignore_cache = TRUE)
       })
 
       NULL
     } else if (name == "shinymixpanel__track") {
-      mp_track_server_engine(data$event, data$properties, data$userid, ignore_cache = TRUE)
+      mp_track_server_engine(data$event, data$properties, userid = data$userid, ignore_cache = TRUE)
       NULL
     } else {
       data

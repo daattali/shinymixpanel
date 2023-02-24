@@ -4,22 +4,49 @@
 \alias{mp_track}
 \title{Track an event to Mixpanel}
 \usage{
-mp_track(event, properties = list())
+mp_track(event, properties = list(), userid = "", token = "")
 }
 \arguments{
 \item{event}{Name of the event}
 
 \item{properties}{List of properties to send for this event}
+
+\item{userid}{A user ID to identify with this event. \strong{Do not use this parameter in Shiny apps.}}
+
+\item{token}{The Mixpanel project token. If not provided, then an environment variable
+\code{SHINYMIXPANEL_TOKEN} will be used. \strong{Do not use this parameter in Shiny apps.}}
 }
 \description{
-When called from a Shiny app, the Mixpanel client-side API is used, which sends events through the
-user's web browser. This is the preferred way to use Mixpanel, as it automatically gathers some user
-data from the browser. If you prefer to use the server-side API explicitly, use
-\code{\link[=mp_track_server]{mp_track_server()}}.\cr\cr
-When called outside a Shiny app, \code{\link[=mp_track_server]{mp_track_server()}} is used.\cr\cr
+See the section below on "Client-side vs server-side tracking" to understand how
+events data will be sent to Mixpanel.\cr\cr
 See the full \href{https://github.com/daattali/shinymixpanel#readme}{README} on
 GitHub for more details.\cr\cr
 }
+\section{Client-side vs server-side tracking}{
+
+When calling \code{\link[=mp_track]{mp_track()}} inside a Shiny app, events data can be sent to Mixpanel in one of two ways: using client-side
+or server-side tracking. When calling \code{\link[=mp_track]{mp_track()}} outside of Shiny, server-side is always used.\cr\cr
+\strong{Client-side tracking} is done via the user's browser (with Javascript). This is
+generally the preferred way to use Mixpanel, since Mixpanel automatically collects some additional information
+from the web browser. However, some users may disable tracking in their browser (for example using an ad blocker),
+and for these users it's not possible to perform client-side tracking.\cr\cr
+With \strong{server-side tracking}, \{shinymixpanel\} will send events to Mixpanel via R API calls. The benefit of
+server-side tracking is that it's unaffected by ad blockers. However, when using server-side tracking, Mixpanel
+does not automatically collect the same attributes that it does in client-side. To compensate for that,
+\{shinymixpanel\} will try to detect some browser data and send it along with any event: user's operating system,
+browser name, screen size, and current URL (these are a subset of the attributes that client-side tracking detects).\cr\cr
+The parameters \code{track_client} and \code{track_server} of \code{\link[=mp_init]{mp_init()}} are both set to \code{TRUE} by default, and they can be used to
+disable one of the two tracking methods:
+\itemize{
+\item If both are set to \code{FALSE}, then Mixpanel tracking is essentially turned off
+\item If only \code{track_client} is \code{TRUE}, then \{shinymixpanel\} will only attempt to use client-side tracking.
+Note that this means that if the user has an ad blocker, then no events will be tracked.
+\item If only \code{track_server} is \code{TRUE}, then all event tracking will be done with server-side tracking.
+\item If both are \code{TRUE}, then \{shinymixpanel\} will prioritize trying to use client-side tracking. If an ad
+blocker is present, then it will automatically switch to using server-side tracking.
+}
+}
+
 \examples{
 if (interactive()) {
   library(shiny)

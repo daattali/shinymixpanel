@@ -55,7 +55,7 @@ All events data for all users can be viewed on [Mixpanel's dashboard](https://mi
   - [How to use](#usage)
   - [Identifying users](#identify)
   - [Event properties](#props)
-  - [Getting around ad blockers](#adblockers)
+  - [Client-side vs server-side tracking](#client-vs-server)
   - [Using {shinymixpanel} during development/testing](#testing)
   - [Outside of Shiny apps](#server)
   
@@ -87,7 +87,7 @@ To use {shinymixpanel}, you must first have a [Mixpanel](https://mixpanel.com/) 
 
 <h2 id="usage">How to use</h2>
 
-To use {shinymixpanel} in a shiny app, **you must first to call `mp_init()` anywhere in the app's UI**. Then you can call `mp_track()` in the server to track any user interaction. The first argument to `mp_track()` is the event name, and you can optionally also pass a list of additional properties that will get recorded with this event. Below is a simple example:
+To use {shinymixpanel} in a shiny app, **you must first call `mp_init()` anywhere in the app's UI**. Then you can call `mp_track()` in the server to track any user interaction. The first argument to `mp_track()` is the event name, and you can optionally also pass a list of additional properties that will get recorded with this event. Below is a simple example:
 
 ```r
 library(shiny)
@@ -171,13 +171,19 @@ mp_init(mixpanel_token, default_properties_js = list(
 
 Will result in 3 variables getting computed right away in the user's browser: "size" (the screen's width), "ua" (the browser's user-agent string), and "domain" (the current webpage's domain). These 3 properties will be sent along with any `mp_track()` calls.
 
-<h2 id="adblockers">Getting around ad blockers</h2>
+<h2 id="client-vs-server">Client-side vs server-side tracking</h2>
 
-By default, {shinymixpanel} attempts to send all event tracking via the user's browser (using Mixpanel's JavaScript API). This is the preferred way to use Mixpanel, as it automatically gathers some user data from the web browser and sends many additional properties.
+When calling `mp_track()` inside a Shiny app, events data can be sent to Mixpanel in one of two ways: using client-side or server-side tracking.
 
-However, some users may disable tracking through their browser -- for example using an ad blocker -- and for these users it's not possible to connect to Mixpanel through the browser. Luckily, {shinymixpanel} has an easy solution to this: setting `track_server = TRUE` in `mp_init()`.
+**Client-side tracking** is done via the user's browser (with Javascript). This is generally the preferred way to use Mixpanel, since Mixpanel automatically collects some additional information from the web browser. However, some users may disable tracking in their browser (for example using an ad blocker), and for these users it's not possible to perform client-side tracking.
 
-When `track_server` is off, then any browser that is blocked from communicating with Mixpanel will simply not send Mixpanel any events. But if `track_server` is on, then {shinymixpanel} will send events to Mixpanel using server API calls (Mixpanel's REST API) when the browser is blocking Mixpanel tracking. When this happens, {shinymixpanel} will even try to detect some user data and send it along as additional properties: browser type, screen size, operating system, and current URL.
+With **server-side tracking**, {shinymixpanel} will send events to Mixpanel via R API calls. The benefit of server-side tracking is that it's unaffected by ad blockers. However, when using server-side tracking, Mixpanel does not automatically collect the same attributes that it does in client-side. To compensate for that, {shinymixpanel} will try to detect some browser data and send it along with any event: user's operating system, browser name, screen size, and current URL (these are a subset of the attributes that client-side tracking detects).
+
+The parameters `track_client` and `track_server` of `mp_init()` are both set to `TRUE` by default, and they can be used to disable one of the two tracking methods:
+    - If both are set to `FALSE`, then Mixpanel tracking is essentially turned off
+    - If only `track_client` is `TRUE`, then {shinymixpanel} will only attempt to use client-side tracking. Note that this means that if the user has an ad blocker, then no events will be tracked.
+    - If only `track_server` is `TRUE`, then all event tracking will be done with server-side tracking.
+    - If both are `TRUE`, then {shinymixpanel} will prioritize trying to use client-side tracking. If an ad blocker is present, then it will automatically switch to using server-side tracking.
 
 <h2 id="testing">Using {shinymixpanel} during development/testing</h2>
 
@@ -193,11 +199,9 @@ While developing or testing your Shiny app, you may not want to have Mixpanel tr
 
 <h2 id="server">Outside of Shiny apps</h2>
 
-Even though {shinymixpanel} was mainly developed with Shiny apps in mind (using Mixpanel's client-side API), it can also be used to send events to Mixpanel from any R code using Mixpanel's server-side API.
+Even though {shinymixpanel} was mainly developed with Shiny apps in mind, it can also be used in any R code. When used outside of Shiny, server-side tracking is always used.
 
-To use {shinymixpanel} in a non-Shiny context, you don't need to call `mp_init()`. Rather, you can just call `mp_track_server()` at any time. A token must be provided, either via the `token` argument or by setting the `SHINYMIXPANEL_TOKEN` environment variable. If you call `mp_userid()` or `mp_default_props()`, then all subsequent event trackings will use the corresponding user ID and properties, just like in the client-side version.
-
-The main advantage of client-side event tracking is that it will automatically gather some user data from the web browser and send it as additional properties. The main advantage of server-side tracking is that it cannot be blocked by a browser's ad blocker.
+To use {shinymixpanel} in a non-Shiny context, you don't need to call `mp_init()`. Rather, you can just call `mp_track()` at any time. A token must be provided, either via the `token` argument or by setting the `SHINYMIXPANEL_TOKEN` environment variable. If you call `mp_userid()` or `mp_default_props()`, then all subsequent event trackings will use the corresponding user ID and properties.
 
 Here is an example of using {shinymixpanel} outside of Shiny:
 
@@ -205,9 +209,7 @@ Here is an example of using {shinymixpanel} outside of Shiny:
 Sys.setenv("SHINYMIXPANEL_TOKEN" = YOUR_PROJECT_TOKEN)
 mp_userid("abcd1234")
 mp_default_props(list("foo" = "bar", "text" = "hello"))
-mp_track_server("greet", list(name = "dean"))
+mp_track("greet", list(name = "dean"))
 ```
 
 The above code will send a "greet" event to Mixpanel, associate it to user "abcd1234", along with properties {"foo" = "bar", "text" = "hello", "name" = "dean"}.
-
-Note that calling `mp_track()` outside of a Shiny app is always equivalent to calling `mp_track_server()`. Calling `mp_track()` inside a Shiny app will attempt to use the client-side API, but if an ad blocker is used and `track_server` is on, then `mp_track_server()` will be used as an alternative.

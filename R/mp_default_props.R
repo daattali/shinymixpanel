@@ -25,14 +25,13 @@ mp_default_props <- function(properties) {
     stop("mp_default_props: A `properties` list is required", call. = FALSE)
   }
 
-  session <- shiny::getDefaultReactiveDomain()
-
-  if (is.null(session)) {
-    .shinymixpanelenv$defaultProps <- properties
-  } else {
+  if (in_shiny()) {
+    session <- shiny::getDefaultReactiveDomain()
     session$userData$shinymixpanel_defaultProps <- properties
     if (!client_unreachable()) {
       session$sendCustomMessage('shinymixpanel.setDefaultProps', list(props = properties))
     }
+  } else {
+    .shinymixpanelenv$defaultProps <- properties
   }
 }

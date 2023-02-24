@@ -8,6 +8,7 @@ let shinymixpanel = {
   testToken : "",
   testDomains : {},
   trackServer : false,
+  trackClient : true,
 
   finalToken : "",
   reachable : true,
@@ -174,7 +175,9 @@ let shinymixpanel = {
       shinymixpanel.options.ignore_dnt = true;
 
       mixpanel.init(shinymixpanel.finalToken, shinymixpanel.options);
-      shinymixpanel.identifyUser();
+      if (shinymixpanel.trackClient) {
+        shinymixpanel.identifyUser();
+      }
 
       shinymixpanel.checkReachable();
     } catch(e) {
@@ -185,7 +188,9 @@ let shinymixpanel = {
   checkReachable : function() {
     if (!shinymixpanel.trackServer) return;
 
-    if (typeof mixpanel === 'undefined') {
+    if (!shinymixpanel.trackClient) {
+      shinymixpanel.setUnreachable();
+    } else if (typeof mixpanel === 'undefined') {
       shinymixpanel.setUnreachable();
     } else {
       (async () => {

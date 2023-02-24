@@ -25,14 +25,14 @@ mp_userid <- function(userid) {
   if (missing(userid)) {
     stop("mp_userid: A `userid` is required", call. = FALSE)
   }
-  session <- shiny::getDefaultReactiveDomain()
 
-  if (is.null(session)) {
-    .shinymixpanelenv$userid <- userid
-  } else {
+  if (in_shiny()) {
+    session <- shiny::getDefaultReactiveDomain()
     session$userData$shinymixpanel_userid <- userid
     if (!client_unreachable()) {
       session$sendCustomMessage('shinymixpanel.setUserID', list(userid = userid))
     }
+  } else {
+    .shinymixpanelenv$userid <- userid
   }
 }

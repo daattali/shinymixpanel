@@ -24,14 +24,17 @@ is_empty <- function(x) {
   is.null(empty_to_null(x))
 }
 
-client_unreachable <- function() {
+in_shiny <- function() {
   session <- shiny::getDefaultReactiveDomain()
-  if (is.null(session)) {
-    return(TRUE)
-  } else {
-    return(
-      !is.null(session$userData$shinymixpanel_unreachable) &&
+  !is.null(session)
+}
+
+client_unreachable <- function() {
+  if (in_shiny()) {
+    session <- shiny::getDefaultReactiveDomain()
+    !is.null(session$userData$shinymixpanel_unreachable) &&
       session$userData$shinymixpanel_unreachable
-    )
+  } else {
+    return(TRUE)
   }
 }
