@@ -181,10 +181,10 @@ With **server-side tracking**, {shinymixpanel} will send events to Mixpanel via 
 
 The parameters `track_client` and `track_server` of `mp_init()` are both set to `TRUE` by default, and they can be used to disable one of the two tracking methods:  
 
-    - If both are set to `FALSE`, then Mixpanel tracking is essentially turned off
-    - If only `track_client` is `TRUE`, then {shinymixpanel} will only attempt to use client-side tracking. Note that this means that if the user has an ad blocker, then no events will be tracked.
-    - If only `track_server` is `TRUE`, then all event tracking will be done with server-side tracking.
-    - If both are `TRUE`, then {shinymixpanel} will prioritize trying to use client-side tracking. If an ad blocker is present, then it will automatically switch to using server-side tracking.
+- If both are set to `FALSE`, then Mixpanel tracking is essentially turned off
+- If only `track_client` is `TRUE`, then {shinymixpanel} will only attempt to use client-side tracking. Note that this means that if the user has an ad blocker, then no events will be tracked.
+- If only `track_server` is `TRUE`, then all event tracking will be done with server-side tracking.
+- If both are `TRUE`, then {shinymixpanel} will prioritize trying to use client-side tracking. If an ad blocker is present, then it will automatically switch to using server-side tracking.
 
 <h2 id="testing">Using {shinymixpanel} during development/testing</h2>
 
