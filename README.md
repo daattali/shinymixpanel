@@ -107,7 +107,7 @@ server <- function(input, output, session) {
   observeEvent(input$btn, {
     mp_track(
       "clicked button",
-      list(num = btn, name = input$name)
+      list(num = input$btn, name = input$name)
     )
   })
 }
@@ -179,7 +179,8 @@ When calling `mp_track()` inside a Shiny app, events data can be sent to Mixpane
 
 With **server-side tracking**, {shinymixpanel} will send events to Mixpanel via R API calls. The benefit of server-side tracking is that it's unaffected by ad blockers. However, when using server-side tracking, Mixpanel does not automatically collect the same attributes that it does in client-side. To compensate for that, {shinymixpanel} will try to detect some browser data and send it along with any event: user's operating system, browser name, screen size, and current URL (these are a subset of the attributes that client-side tracking detects).
 
-The parameters `track_client` and `track_server` of `mp_init()` are both set to `TRUE` by default, and they can be used to disable one of the two tracking methods:
+The parameters `track_client` and `track_server` of `mp_init()` are both set to `TRUE` by default, and they can be used to disable one of the two tracking methods:  
+
     - If both are set to `FALSE`, then Mixpanel tracking is essentially turned off
     - If only `track_client` is `TRUE`, then {shinymixpanel} will only attempt to use client-side tracking. Note that this means that if the user has an ad blocker, then no events will be tracked.
     - If only `track_server` is `TRUE`, then all event tracking will be done with server-side tracking.
