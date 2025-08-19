@@ -14,7 +14,7 @@
 #' will be associated with all event tracking calls. If the user ID is not known in the UI and
 #' is only known in the server, call [mp_userid()] from the server.
 #' @param options List of configuration options to pass to Mixpanel. A full list of supported
-#' options is available in [Mixpanel's documentation](https://developer.mixpanel.com/docs/javascript-full-api-reference#mixpanelset_config).
+#' options is available in [Mixpanel's documentation](https://github.com/mixpanel/mixpanel-js/blob/master/doc/readme.io/javascript-full-api-reference.md#mixpanelset_config).
 #' See the examples below for sample usage.
 #' @param default_properties List of properties to send with every event.
 #' @param default_properties_js List of properties that need to be computed client-side (with JavaScript

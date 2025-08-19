@@ -25,7 +25,7 @@ will be associated with all event tracking calls. If the user ID is not known in
 is only known in the server, call \code{\link[=mp_userid]{mp_userid()}} from the server.}
 
 \item{options}{List of configuration options to pass to Mixpanel. A full list of supported
-options is available in \href{https://developer.mixpanel.com/docs/javascript-full-api-reference#mixpanelset_config}{Mixpanel's documentation}.
+options is available in \href{https://github.com/mixpanel/mixpanel-js/blob/master/doc/readme.io/javascript-full-api-reference.md#mixpanelset_config}{Mixpanel's documentation}.
 See the examples below for sample usage.}
 
 \item{default_properties}{List of properties to send with every event.}
